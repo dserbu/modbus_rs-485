@@ -14,7 +14,7 @@ log.setLevel(logging.DEBUG)
 #unit= the slave unit this request is targeting
 #address= the starting address to read from
 
-client= ModbusClient(method = "rtu", port="/dev/ttyUSB0",timeout=0.5,stopbits = 1, bytesize = 8,baudrate=19200)
+client= ModbusClient(method = "rtu", port="/dev/ttyRasPi",stopbits = 2,parity="N", bytesize = 8,baudrate=9600)
 
 #Connect to the serial modbus server
 connection = client.connect()
@@ -24,6 +24,6 @@ print connection
 #result= client.read_holding_registers(0x1B58,2)
 result= client.read_holding_registers(0x1B58,2,unit=1)
 
-print "AAAAAAAAAaa: %s" %(result)
+print "Respons: %s" %(result)
 #closes the underlying socket connection
 client.close()
