@@ -1,5 +1,8 @@
 import pymodbus
 import serial
+import time
+import binascii
+import struct
 from pymodbus.pdu import ModbusRequest
 #initialize a serial RTU client instance
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
@@ -10,20 +13,50 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#count= the number of registers to read
-#unit= the slave unit this request is targeting
-#address= the starting address to read from
 
-client= ModbusClient(method = "rtu", port="/dev/ttyRasPi",stopbits = 2,parity="N", bytesize = 8,baudrate=9600)
+#Cliente connection
+portName="/dev/ttyRasPi"
+methName="RTU"
+stpBits=2
+baudSpeed=9600
 
-#Connect to the serial modbus server
-connection = client.connect()
-print connection
+#Time calculation
+regsSp = 10
+
+#Data that needs to be read from register
+regStart=0x1B58 #7000
+numCoils=2
+slaveUnit=1
+
+
+client= ModbusClient(method = methName, port=portName,stopbits=stpBits,baudrate=baudSpeed)
+
+startTs = time.time()
+try:
+    if client.connect():
+        print ("Port open")
+        regFrame = client.read_holding_registers(regStart, numCoils, unit=slaveUnit)
+        print (regFrame.registers[:])
+        #z = "%s%s" % (coil0)
+        #''.join(chr(int(x, 16)) for x in regFrame.split())
+    else:
+        print("results were none")
+        client.close()
+except:
+    print("Unknown Exception")
+    raise
+
+#Calculate time execution
+stopTs = time.time()
+timeDiff = stopTs - startTs
+
+print "Time execution %s sec" % timeDiff
+
+    #Connect to the serial modbus server
+#print connection
 
 #Starting add, num of reg to read, slave unit.
-#result= client.read_holding_registers(0x1B58,2)
-result= client.read_holding_registers(0x1B58,2,unit=1)
-
-print "Respons: %s" %(result)
+#result= client.read_holding_registers(0x1B58,90,unit=1)
+#print "Respons: %s" %(result)
 #closes the underlying socket connection
-client.close()
+#client.close()
