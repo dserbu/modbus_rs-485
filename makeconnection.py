@@ -1,10 +1,10 @@
 import pymodbus
-import serial
-import time
+#import serial
+import time                                 # check execution time
+import struct                               # ussing struct from convert from HEX to IEEE745
 import binascii
-import struct
+from ctypes import create_string_buffer     # avoiding buffer overhead by providing a buffer that was created earlier
 from pymodbus.pdu import ModbusRequest
-#initialize a serial RTU client instance
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 from pymodbus.transaction import ModbusRtuFramer
 
@@ -25,7 +25,7 @@ regsSp = 10
 
 #Data that needs to be read from register
 regStart=0x1B58 #7000
-numCoils=2
+numCoils=16
 slaveUnit=1
 
 
@@ -34,9 +34,20 @@ client= ModbusClient(method = methName, port=portName,stopbits=stpBits,baudrate=
 startTs = time.time()
 try:
     if client.connect():
-        print ("Port open")
-        regFrame = client.read_holding_registers(regStart, numCoils, unit=slaveUnit)
-        print (regFrame.registers[:])
+        #Obtain all registers splited in 16bit registers
+        regFrame = (client.read_holding_registers(regStart, numCoils, unit=slaveUnit)).registers[:]
+
+        # Convert obtained values to hexadecimal
+        packFrame = struct.pack('>HH', regFrame[0], regFrame[1])
+
+        # Unpack received frame as IEEE754 format (float)
+        unpackFrame = struct.unpack('>f', packFrame)
+
+        # Print inforamtion from unpacked frame
+        print "%.3f V" % unpackFrame
+        # Print the entire register with all coils
+        print regFrame
+
         #z = "%s%s" % (coil0)
         #''.join(chr(int(x, 16)) for x in regFrame.split())
     else:
@@ -49,14 +60,4 @@ except:
 #Calculate time execution
 stopTs = time.time()
 timeDiff = stopTs - startTs
-
 print "Time execution %s sec" % timeDiff
-
-    #Connect to the serial modbus server
-#print connection
-
-#Starting add, num of reg to read, slave unit.
-#result= client.read_holding_registers(0x1B58,90,unit=1)
-#print "Respons: %s" %(result)
-#closes the underlying socket connection
-#client.close()
