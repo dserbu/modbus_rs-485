@@ -1,3 +1,4 @@
-# modbus_rs-485
+# modbus_rs-485 Lumel n43
 
-How to read register from Lumel n43. In this case register 7000.
+1. Reading power consumption from Lumel n43.
+2. Dumping information in csv file
